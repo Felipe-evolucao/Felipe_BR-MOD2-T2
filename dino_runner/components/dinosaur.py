@@ -21,6 +21,7 @@ class Dinosaur(Sprite):
         self.dino_jump = False
         self.dino_duck = False
         self.jump_vel = self.JUMP_VEL
+        
     def update(self, user_input):
         if self.dino_run:
             self.run()
