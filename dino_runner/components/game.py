@@ -20,6 +20,7 @@ class Game:
         self.x_pos_bg = 0
         self.y_pos_bg = 380
         self.score = 0
+        self.death_count = 0
         self.player = Dinosaur()
         self.obstacle_manager = ObstacleManager()
 
@@ -94,11 +95,14 @@ class Game:
         half_screen_height = SCREEN_HEIGHT // 2
         half_screen_width = SCREEN_WIDTH // 2
 
-        font = pygame.font.Font(FONT_STYLE, 50)
-        text = font.render("Press any key to start", True, (0, 0, 0))
-        text_rect = text.get_rect()
-        text_rect.center = (half_screen_width, half_screen_height)
-        self.screen.blit(text, text_rect)
-
+        if self.death_count == 0:
+            font = pygame.font.Font(FONT_STYLE, 50)
+            text = font.render("Press any key to start", True, (0, 0, 0))
+            text_rect = text.get_rect()
+            text_rect.center = (half_screen_width, half_screen_height)
+            self.screen.blit(text, text_rect)
+        else:
+            self.screen.blit(ICON, (half_screen_width - 20, half_screen_height - 140))
+            
         pygame.display.update()
         self.handle_events_on_menu()
