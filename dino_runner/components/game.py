@@ -1,3 +1,4 @@
+from cgitb import reset
 import pygame
 
 from dino_runner.components.dinosaur import Dinosaur
@@ -103,6 +104,12 @@ class Game:
             self.screen.blit(text, text_rect)
         else:
             self.screen.blit(ICON, (half_screen_width - 20, half_screen_height - 140))
-            
+            font = pygame.font.Font(FONT_STYLE, 50)
+            text = font.render("Press any key to restart", True, (0, 0, 0))
+            text_rect = text.get_rect()
+            text_rect.center = (half_screen_width, half_screen_height)
+            self.screen.blit(text, text_rect)
+            self.score = 0
+
         pygame.display.update()
         self.handle_events_on_menu()
