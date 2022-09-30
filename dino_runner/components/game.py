@@ -2,8 +2,9 @@ from cgitb import reset
 import pygame
 
 from dino_runner.components.dinosaur import Dinosaur
-from dino_runner.utils.constants import BG, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS, RESETE
+from dino_runner.utils.constants import BG, ICON, SCREEN_HEIGHT, SCREEN_WIDTH, TITLE, FPS, RESETE, GAME_OVER, DEFAULT_TYPE
 from dino_runner.components.obstacles.obstacle_manager import ObstacleManager
+from dino_runner.components.power_ups.power_up_manager import PowerUpManager
 
 FONT_STYLE = "freesansbold.ttf"
 
@@ -21,9 +22,11 @@ class Game:
         self.x_pos_bg = 0
         self.y_pos_bg = 380
         self.score = 0
+        self.score_accumulator = 0
         self.death_count = 0
         self.player = Dinosaur()
         self.obstacle_manager = ObstacleManager()
+        self.power_up_manager = PowerUpManager()
 
     def execute(self):
         self.running = True
@@ -36,7 +39,9 @@ class Game:
 
     def run(self):
         self.playing = True
+        self.score = 0
         self.obstacle_manager.reset_obstacles()
+        self.power_up_manager.reset_power_ups()
         while self.playing:
             self.events()
             self.update()
@@ -52,13 +57,17 @@ class Game:
         user_input = pygame.key.get_pressed()
         self.player.update(user_input)
         self.obstacle_manager.update(self)
+        self.power_up_manager.update(self.score, self.game_speed, self.player)
 
     def update_score(self):
         self.score +=1
         if self.score % 100 == 0:
-            self.game_speed += 1
+            self.game_speed += 2
 
-        self.display_screen(f"Score: {self.score}", 1000, 50, 30)
+        if self.score >= self.score_accumulator:
+            self.score_accumulator = self.score
+
+        self.format_text(f"Score: {self.score}", 1000, 50, 30)
 
     def draw(self):
         self.clock.tick(FPS)
@@ -67,8 +76,19 @@ class Game:
         self.player.draw(self.screen)
         self.obstacle_manager.draw(self.screen)
         self.update_score()
+        self.draw_power_up_time()
+        self.power_up_manager.draw(self.screen)
         pygame.display.update()
         pygame.display.flip()
+
+    def draw_power_up_time(self):
+        if self.player.has_power_up:
+            time_to_show = round((self.player.power_up_time - pygame.time.get_ticks()) / 1000, 2)
+            if time_to_show >= 0:
+                self.format_text(f"{self.player.type.capitalize()} enabled for {time_to_show} seconds.", 500, 40, 18)
+            else:
+                self.player.has_power_up = False
+                self.player.type = DEFAULT_TYPE
 
     def draw_background(self):
         image_width = BG.get_width()
@@ -87,7 +107,7 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 self.run()
             
-    def display_screen(self, dados_inseridos, eixo_y, eixo_x, size_font):
+    def format_text(self, dados_inseridos, eixo_y, eixo_x, size_font):
         font = pygame.font.Font(FONT_STYLE, int(size_font))
         text = font.render(dados_inseridos, True, (0, 0, 0))
         text_rect = text.get_rect()
@@ -101,13 +121,15 @@ class Game:
 
         if self.death_count == 0:
             self.screen.blit(ICON, (half_screen_width - 40, half_screen_height - 250))
-            self.display_screen("Press any key to start", half_screen_width, half_screen_height, 50)
+            self.format_text("Press any key to start", half_screen_width, half_screen_height, 50)
         else:
-            self.screen.blit(ICON, (half_screen_width - 20, half_screen_height - 140))
-            self.screen.blit(RESETE, (half_screen_width - 20, half_screen_height + 150))
-            self.display_screen("GAME OVER", half_screen_width, half_screen_height - 80, 80)
-            self.display_screen("Press any key to restart", half_screen_width, half_screen_height + 80, 50)
-            self.score = 0
+            self.screen.blit(ICON, (half_screen_width - 20, half_screen_height - 100))
+            self.screen.blit(RESETE, (half_screen_width - 20, half_screen_height + 20))
+            self.screen.blit(GAME_OVER, (half_screen_width - 170, half_screen_height - 240))
+            self.format_text(f"Your Score: {self.score}", half_screen_width - 120, half_screen_height - 150, 20)
+            self.format_text(f"Best Score: {self.score_accumulator}", half_screen_width + 120, half_screen_height - 150, 20)
+            self.format_text(f"You already died {self.death_count} times", half_screen_width -20, half_screen_height + 200, 30)
+            self.format_text("You're Died! Press any key to restart", half_screen_width, half_screen_height + 120, 40)
             self.game_speed = 20
 
         pygame.display.update()
