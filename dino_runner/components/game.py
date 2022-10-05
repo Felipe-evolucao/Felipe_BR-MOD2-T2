@@ -129,7 +129,7 @@ class Game:
             self.format_text(f"Your Score: {self.score}", half_screen_width - 120, half_screen_height - 150, 20)
             self.format_text(f"Best Score: {self.score_accumulator}", half_screen_width + 120, half_screen_height - 150, 20)
             self.format_text(f"You already died {self.death_count} times", half_screen_width -20, half_screen_height + 200, 30)
-            self.format_text("You're Died! Press any key to restart", half_screen_width, half_screen_height + 120, 40)
+            self.format_text("You're dead! Press any key to restart", half_screen_width, half_screen_height + 120, 40)
             self.game_speed = 20
 
         pygame.display.update()
